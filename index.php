@@ -286,21 +286,25 @@
 
     .modal-content {
       background-color: white;
-      padding: 25px;
       border-radius: 10px;
       width: 90%;
       max-width: 600px;
       max-height: 80vh;
-      overflow-y: auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      padding: 15px 25px;
       border-bottom: 2px solid #3498db;
-      padding-bottom: 10px;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .modal-header h2 {
@@ -315,10 +319,24 @@
       font-size: 24px;
       cursor: pointer;
       color: #7f8c8d;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .close-btn:hover {
       color: #e74c3c;
+      background-color: #f5f5f5;
+      border-radius: 50%;
+    }
+
+    .modal-body {
+      padding: 0 25px 25px;
+      overflow-y: auto;
+      flex: 1;
     }
 
     .initial-machine {
@@ -405,6 +423,20 @@
       right: 10px;
     }
 
+    /* Comma formatting for numbers */
+    .formatted-number {
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* Keyboard navigation helper */
+    .keyboard-hint {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 5px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -421,6 +453,10 @@
       .date-navigation {
         flex-direction: column;
         gap: 10px;
+      }
+      .modal-content {
+        width: 95%;
+        max-height: 90vh;
       }
     }
   </style>
@@ -456,22 +492,26 @@
         
         <div class="form-group">
           <label>Cash in Machine (TZS):</label>
-          <input type="number" step="0.01" id="cashInMachine" required placeholder="Enter amount in machine">
+          <input type="text" id="cashInMachine" required placeholder="Enter amount in machine (e.g., 1,000,000)">
+          <div class="keyboard-hint">Press ↓ to move to next field</div>
         </div>
         
         <div class="form-group">
           <label>Cash at Shop (TZS):</label>
-          <input type="number" step="0.01" id="cashAtShop" required placeholder="Enter amount at shop">
+          <input type="text" id="cashAtShop" required placeholder="Enter amount at shop (e.g., 500,000)">
+          <div class="keyboard-hint">Press ↓ for next field, ↑ for previous</div>
         </div>
         
         <div class="form-group">
           <label>Cash at Home (TZS):</label>
-          <input type="number" step="0.01" id="cashAtHome" required placeholder="Enter amount at home">
+          <input type="text" id="cashAtHome" required placeholder="Enter amount at home (e.g., 200,000)">
+          <div class="keyboard-hint">Press ↓ for date field, ↑ for previous</div>
         </div>
         
         <div class="form-group">
           <label>Date:</label>
           <input type="date" id="balanceDate" value="">
+          <div class="keyboard-hint">Press Enter to save</div>
         </div>
         
         <button type="submit">💾 Save Balance</button>
@@ -498,34 +538,36 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2>Initial Capital Management</h2>
-        <button class="close-btn">&times;</button>
+        <button class="close-btn" title="Close">✕</button>
       </div>
-      <div id="initialCapitalContent">
-        <!-- Initial capital data will be displayed here -->
-      </div>
-      
-      <!-- Add New Machine Form -->
-      <div class="add-machine-form">
-        <h3>Add New Machine</h3>
-        <div class="form-group">
-          <label>Machine Name:</label>
-          <input type="text" id="newMachineName" placeholder="Enter machine name">
+      <div class="modal-body">
+        <div id="initialCapitalContent">
+          <!-- Initial capital data will be displayed here -->
         </div>
-        <div class="form-group">
-          <label>Initial Cash in Machine (TZS):</label>
-          <input type="number" step="0.01" id="newMachineCash" placeholder="Enter initial amount in machine">
-        </div>
-        <div class="form-group">
-          <label>Initial Cash at Shop (TZS):</label>
-          <input type="number" step="0.01" id="newMachineShop" placeholder="Enter initial amount at shop">
-        </div>
-        <div class="form-group">
-          <label>Initial Cash at Home (TZS):</label>
-          <input type="number" step="0.01" id="newMachineHome" placeholder="Enter initial amount at home">
-        </div>
-        <div class="add-machine-buttons">
-          <button id="cancelAddMachine" class="cancel-btn">Cancel</button>
-          <button id="saveNewMachine">Add Machine</button>
+        
+        <!-- Add New Machine Form -->
+        <div class="add-machine-form">
+          <h3>Add New Machine</h3>
+          <div class="form-group">
+            <label>Machine Name:</label>
+            <input type="text" id="newMachineName" placeholder="Enter machine name">
+          </div>
+          <div class="form-group">
+            <label>Initial Cash in Machine (TZS):</label>
+            <input type="text" id="newMachineCash" placeholder="Enter initial amount in machine (e.g., 1,000,000)">
+          </div>
+          <div class="form-group">
+            <label>Initial Cash at Shop (TZS):</label>
+            <input type="text" id="newMachineShop" placeholder="Enter initial amount at shop (e.g., 500,000)">
+          </div>
+          <div class="form-group">
+            <label>Initial Cash at Home (TZS):</label>
+            <input type="text" id="newMachineHome" placeholder="Enter initial amount at home (e.g., 200,000)">
+          </div>
+          <div class="add-machine-buttons">
+            <button id="cancelAddMachine" class="cancel-btn">Cancel</button>
+            <button id="saveNewMachine">Add Machine</button>
+          </div>
         </div>
       </div>
     </div>
@@ -566,6 +608,83 @@
         "TCB", "UCHUMI", "M-PESA", "TIGO", "AIRTEL", "HALOTEL"
       ];
 
+      // Format number with commas
+      function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      // Parse formatted number (remove commas)
+      function parseFormattedNumber(str) {
+        return parseFloat(str.replace(/,/g, '')) || 0;
+      }
+
+      // Format input value as user types
+      function formatInput(event) {
+        const input = event.target;
+        // Remove non-digit characters except decimal point
+        let value = input.value.replace(/[^\d.]/g, '');
+        
+        // Format with commas
+        const parts = value.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        
+        input.value = parts.join('.');
+      }
+
+      // Set up keyboard navigation for form inputs
+      function setupKeyboardNavigation() {
+        const inputs = [
+          document.getElementById('cashInMachine'),
+          document.getElementById('cashAtShop'), 
+          document.getElementById('cashAtHome'),
+          document.getElementById('balanceDate')
+        ];
+
+        inputs.forEach((input, index) => {
+          input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              if (index < inputs.length - 1) {
+                inputs[index + 1].focus();
+              }
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              if (index > 0) {
+                inputs[index - 1].focus();
+              } else {
+                document.getElementById('machineSelect').focus();
+              }
+            }
+          });
+        });
+
+        // Also set up for initial capital modal inputs
+        const modalInputs = [
+          document.getElementById('newMachineName'),
+          document.getElementById('newMachineCash'),
+          document.getElementById('newMachineShop'),
+          document.getElementById('newMachineHome')
+        ];
+
+        modalInputs.forEach((input, index) => {
+          if (input) {
+            input.addEventListener('keydown', function(e) {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (index < modalInputs.length - 1) {
+                  modalInputs[index + 1].focus();
+                }
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (index > 0) {
+                  modalInputs[index - 1].focus();
+                }
+              }
+            });
+          }
+        });
+      }
+
       // Check if initial balances are already set
       function checkInitialSetup() {
         const savedInitialBalances = localStorage.getItem('initialBalances');
@@ -574,6 +693,7 @@
           mainApp.style.display = 'flex';
           setupPage.style.display = 'none';
           updateMachineSelect();
+          setupKeyboardNavigation();
         } else {
           // Show setup page
           mainApp.style.display = 'none';
@@ -618,15 +738,15 @@
             <h3>${machine}</h3>
             <div class="form-group">
               <label>Initial Cash in Machine (TZS):</label>
-              <input type="number" step="0.01" id="initial-${machine}-machine" placeholder="Enter initial amount in machine">
+              <input type="text" id="initial-${machine}-machine" placeholder="Enter initial amount in machine (e.g., 1,000,000)" oninput="formatInput(event)">
             </div>
             <div class="form-group">
               <label>Initial Cash at Shop (TZS):</label>
-              <input type="number" step="0.01" id="initial-${machine}-shop" placeholder="Enter initial amount at shop">
+              <input type="text" id="initial-${machine}-shop" placeholder="Enter initial amount at shop (e.g., 500,000)" oninput="formatInput(event)">
             </div>
             <div class="form-group">
               <label>Initial Cash at Home (TZS):</label>
-              <input type="number" step="0.01" id="initial-${machine}-home" placeholder="Enter initial amount at home">
+              <input type="text" id="initial-${machine}-home" placeholder="Enter initial amount at home (e.g., 200,000)" oninput="formatInput(event)">
             </div>
           `;
           setupMachines.appendChild(machineDiv);
@@ -636,9 +756,9 @@
       // Save initial balances
       saveSetupBtn.addEventListener('click', function() {
         defaultMachines.forEach(machine => {
-          const cashMachine = parseFloat(document.getElementById(`initial-${machine}-machine`).value) || 0;
-          const cashShop = parseFloat(document.getElementById(`initial-${machine}-shop`).value) || 0;
-          const cashHome = parseFloat(document.getElementById(`initial-${machine}-home`).value) || 0;
+          const cashMachine = parseFormattedNumber(document.getElementById(`initial-${machine}-machine`).value) || 0;
+          const cashShop = parseFormattedNumber(document.getElementById(`initial-${machine}-shop`).value) || 0;
+          const cashHome = parseFormattedNumber(document.getElementById(`initial-${machine}-home`).value) || 0;
           const total = cashMachine + cashShop + cashHome;
           
           if (total > 0) {
@@ -650,18 +770,24 @@
         updateMachineSelect();
         mainApp.style.display = 'flex';
         setupPage.style.display = 'none';
+        setupKeyboardNavigation();
       });
 
       // Skip setup
       skipSetupBtn.addEventListener('click', function() {
         mainApp.style.display = 'flex';
         setupPage.style.display = 'none';
+        setupKeyboardNavigation();
       });
 
       // View initial capital
       viewInitialBtn.addEventListener('click', function() {
         displayInitialCapital();
         initialCapitalModal.style.display = 'flex';
+        // Focus on first input in modal
+        setTimeout(() => {
+          document.getElementById('newMachineName').focus();
+        }, 100);
       });
 
       // Close modal
@@ -680,9 +806,9 @@
       // Save new machine
       saveNewMachineBtn.addEventListener('click', function() {
         const machineName = document.getElementById('newMachineName').value.trim();
-        const cashMachine = parseFloat(document.getElementById('newMachineCash').value) || 0;
-        const cashShop = parseFloat(document.getElementById('newMachineShop').value) || 0;
-        const cashHome = parseFloat(document.getElementById('newMachineHome').value) || 0;
+        const cashMachine = parseFormattedNumber(document.getElementById('newMachineCash').value) || 0;
+        const cashShop = parseFormattedNumber(document.getElementById('newMachineShop').value) || 0;
+        const cashHome = parseFormattedNumber(document.getElementById('newMachineHome').value) || 0;
         
         if (!machineName) {
           alert('Please enter a machine name.');
@@ -711,6 +837,13 @@
       // Close modal when clicking outside
       window.addEventListener('click', function(event) {
         if (event.target === initialCapitalModal) {
+          initialCapitalModal.style.display = 'none';
+        }
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && initialCapitalModal.style.display === 'flex') {
           initialCapitalModal.style.display = 'none';
         }
       });
@@ -757,10 +890,10 @@
           div.classList.add("initial-machine");
           div.innerHTML = `
             <h3>${machine}</h3>
-            <div class="initial-item"><span>Cash in Machine:</span><span>${data.cashMachine.toFixed(2)} TZS</span></div>
-            <div class="initial-item"><span>Cash at Shop:</span><span>${data.cashShop.toFixed(2)} TZS</span></div>
-            <div class="initial-item"><span>Cash at Home:</span><span>${data.cashHome.toFixed(2)} TZS</span></div>
-            <div class="initial-item"><span>Total:</span><span>${data.total.toFixed(2)} TZS</span></div>
+            <div class="initial-item"><span>Cash in Machine:</span><span class="formatted-number">${formatNumber(data.cashMachine.toFixed(2))} TZS</span></div>
+            <div class="initial-item"><span>Cash at Shop:</span><span class="formatted-number">${formatNumber(data.cashShop.toFixed(2))} TZS</span></div>
+            <div class="initial-item"><span>Cash at Home:</span><span class="formatted-number">${formatNumber(data.cashHome.toFixed(2))} TZS</span></div>
+            <div class="initial-item"><span>Total:</span><span class="formatted-number">${formatNumber(data.total.toFixed(2))} TZS</span></div>
             <div class="initial-actions">
               <button class="edit-initial-btn" onclick="editInitialBalance('${machine}')">✏️ Edit</button>
               <button class="delete-initial-btn" onclick="deleteInitialBalance('${machine}')">🗑️ Delete</button>
@@ -775,7 +908,7 @@
         totalDiv.classList.add("initial-machine");
         totalDiv.innerHTML = `
           <h3>Grand Total</h3>
-          <div class="initial-item"><span>Total Initial Capital:</span><span>${grandTotal.toFixed(2)} TZS</span></div>
+          <div class="initial-item"><span>Total Initial Capital:</span><span class="formatted-number">${formatNumber(grandTotal.toFixed(2))} TZS</span></div>
         `;
         initialCapitalContent.appendChild(totalDiv);
       }
@@ -791,15 +924,15 @@
           <h3>Edit ${machine}</h3>
           <div class="form-group">
             <label>Cash in Machine (TZS):</label>
-            <input type="number" step="0.01" id="edit-${machine}-machine" value="${data.cashMachine}">
+            <input type="text" id="edit-${machine}-machine" value="${formatNumber(data.cashMachine)}" oninput="formatInput(event)">
           </div>
           <div class="form-group">
             <label>Cash at Shop (TZS):</label>
-            <input type="number" step="0.01" id="edit-${machine}-shop" value="${data.cashShop}">
+            <input type="text" id="edit-${machine}-shop" value="${formatNumber(data.cashShop)}" oninput="formatInput(event)">
           </div>
           <div class="form-group">
             <label>Cash at Home (TZS):</label>
-            <input type="number" step="0.01" id="edit-${machine}-home" value="${data.cashHome}">
+            <input type="text" id="edit-${machine}-home" value="${formatNumber(data.cashHome)}" oninput="formatInput(event)">
           </div>
           <div class="add-machine-buttons">
             <button class="cancel-btn" onclick="cancelEdit('${machine}')">Cancel</button>
@@ -824,9 +957,9 @@
 
       // Save edited balance
       window.saveEditedBalance = function(machine) {
-        const cashMachine = parseFloat(document.getElementById(`edit-${machine}-machine`).value) || 0;
-        const cashShop = parseFloat(document.getElementById(`edit-${machine}-shop`).value) || 0;
-        const cashHome = parseFloat(document.getElementById(`edit-${machine}-home`).value) || 0;
+        const cashMachine = parseFormattedNumber(document.getElementById(`edit-${machine}-machine`).value) || 0;
+        const cashShop = parseFormattedNumber(document.getElementById(`edit-${machine}-shop`).value) || 0;
+        const cashHome = parseFormattedNumber(document.getElementById(`edit-${machine}-home`).value) || 0;
         const total = cashMachine + cashShop + cashHome;
         
         initialBalances[machine] = { cashMachine, cashShop, cashHome, total };
@@ -852,9 +985,9 @@
         e.preventDefault();
 
         const machine = document.getElementById("machineSelect").value;
-        const cashMachine = parseFloat(document.getElementById("cashInMachine").value) || 0;
-        const cashShop = parseFloat(document.getElementById("cashAtShop").value) || 0;
-        const cashHome = parseFloat(document.getElementById("cashAtHome").value) || 0;
+        const cashMachine = parseFormattedNumber(document.getElementById("cashInMachine").value) || 0;
+        const cashShop = parseFormattedNumber(document.getElementById("cashAtShop").value) || 0;
+        const cashHome = parseFormattedNumber(document.getElementById("cashAtHome").value) || 0;
         const date = document.getElementById("balanceDate").value;
         const total = cashMachine + cashShop + cashHome;
 
@@ -937,13 +1070,13 @@
           
           div.innerHTML = `
             <h3>${machine} - ${currentDisplayDate}</h3>
-            <div class="summary-item"><span>Cash in Machine:</span><span>${data.cashMachine.toFixed(2)} TZS</span></div>
-            <div class="summary-item"><span>Cash at Shop:</span><span>${data.cashShop.toFixed(2)} TZS</span></div>
-            <div class="summary-item"><span>Cash at Home:</span><span>${data.cashHome.toFixed(2)} TZS</span></div>
-            <div class="summary-item"><span>Total:</span><span>${data.total.toFixed(2)} TZS</span></div>
-            <div class="summary-item"><span>${comparisonText}:</span><span>${difference > 0 ? '+' : ''}${difference.toFixed(2)} TZS</span></div>
+            <div class="summary-item"><span>Cash in Machine:</span><span class="formatted-number">${formatNumber(data.cashMachine.toFixed(2))} TZS</span></div>
+            <div class="summary-item"><span>Cash at Shop:</span><span class="formatted-number">${formatNumber(data.cashShop.toFixed(2))} TZS</span></div>
+            <div class="summary-item"><span>Cash at Home:</span><span class="formatted-number">${formatNumber(data.cashHome.toFixed(2))} TZS</span></div>
+            <div class="summary-item"><span>Total:</span><span class="formatted-number">${formatNumber(data.total.toFixed(2))} TZS</span></div>
+            <div class="summary-item"><span>${comparisonText}:</span><span class="formatted-number">${difference > 0 ? '+' : ''}${formatNumber(difference.toFixed(2))} TZS</span></div>
             <div class="difference ${differenceClass}">
-              Daily Change: ${difference > 0 ? '+' : ''}${difference.toFixed(2)} TZS
+              Daily Change: ${difference > 0 ? '+' : ''}${formatNumber(difference.toFixed(2))} TZS
             </div>
             <div class="action-buttons">
               <button class="delete-btn" onclick="deleteBalance('${currentDisplayDate}', '${machine}')">🗑️ Delete</button>
@@ -958,9 +1091,9 @@
       window.updateBalance = function(date, machine) {
         const data = balances[date][machine];
         document.getElementById("machineSelect").value = machine;
-        document.getElementById("cashInMachine").value = data.cashMachine;
-        document.getElementById("cashAtShop").value = data.cashShop;
-        document.getElementById("cashAtHome").value = data.cashHome;
+        document.getElementById("cashInMachine").value = formatNumber(data.cashMachine);
+        document.getElementById("cashAtShop").value = formatNumber(data.cashShop);
+        document.getElementById("cashAtHome").value = formatNumber(data.cashHome);
         document.getElementById("balanceDate").value = date;
       };
 
@@ -981,6 +1114,9 @@
 
       // Initialize the app
       checkInitialSetup();
+      
+      // Make formatInput function available globally
+      window.formatInput = formatInput;
     });
   </script>
 </body>
