@@ -248,6 +248,28 @@
       background-color: #8e44ad;
     }
 
+    /* Date Navigation */
+    .date-navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 5px;
+    }
+
+    .date-nav-btn {
+      background-color: #3498db;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .current-date {
+      font-weight: bold;
+      color: #3498db;
+    }
+
     /* Initial Capital Modal */
     .modal {
       display: none;
@@ -396,6 +418,10 @@
         display: flex;
         justify-content: flex-end;
       }
+      .date-navigation {
+        flex-direction: column;
+        gap: 10px;
+      }
     }
   </style>
 </head>
@@ -455,6 +481,14 @@
     <div class="summary-section">
       <h2>Balance Summary</h2>
       <button id="viewInitialBtn" class="view-initial-btn">📊 View/Manage Initial Capital</button>
+      
+      <!-- Date Navigation -->
+      <div class="date-navigation">
+        <button id="prevDate" class="date-nav-btn">◀ Previous Day</button>
+        <span id="currentDateDisplay" class="current-date">Today</span>
+        <button id="nextDate" class="date-nav-btn">Next Day ▶</button>
+      </div>
+      
       <div id="summaryContent"></div>
     </div>
   </div>
@@ -511,6 +545,9 @@
       const saveNewMachineBtn = document.getElementById("saveNewMachine");
       const cancelAddMachineBtn = document.getElementById("cancelAddMachine");
       const machineSelect = document.getElementById("machineSelect");
+      const prevDateBtn = document.getElementById("prevDate");
+      const nextDateBtn = document.getElementById("nextDate");
+      const currentDateDisplay = document.getElementById("currentDateDisplay");
       
       const balanceForm = document.getElementById("balanceForm");
       const summaryContent = document.getElementById("summaryContent");
@@ -521,6 +558,7 @@
 
       let balances = {};
       let initialBalances = {};
+      let currentDisplayDate = today;
 
       // Default machines
       const defaultMachines = [
@@ -549,6 +587,9 @@
           balances = JSON.parse(savedBalances);
           displaySummary();
         }
+        
+        // Update date display
+        updateDateDisplay();
       }
 
       // Update machine select dropdown
@@ -673,6 +714,34 @@
           initialCapitalModal.style.display = 'none';
         }
       });
+
+      // Date navigation
+      prevDateBtn.addEventListener('click', function() {
+        navigateDate(-1);
+      });
+
+      nextDateBtn.addEventListener('click', function() {
+        navigateDate(1);
+      });
+
+      // Navigate between dates
+      function navigateDate(direction) {
+        const date = new Date(currentDisplayDate);
+        date.setDate(date.getDate() + direction);
+        currentDisplayDate = date.toISOString().split("T")[0];
+        updateDateDisplay();
+        displaySummary();
+      }
+
+      // Update date display
+      function updateDateDisplay() {
+        const date = new Date(currentDisplayDate);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateDisplay.textContent = date.toLocaleDateString('en-US', options);
+        
+        // Disable next button if it's today or future
+        nextDateBtn.disabled = currentDisplayDate >= today;
+      }
 
       // Display initial capital in modal
       function displayInitialCapital() {
@@ -804,50 +873,81 @@
         // Save to localStorage
         localStorage.setItem('dailyBalances', JSON.stringify(balances));
         
+        // Clean up old data (keep only last 2 months)
+        cleanOldData();
+        
         displaySummary();
         balanceForm.reset();
         balanceDate.value = today;
+        currentDisplayDate = today;
+        updateDateDisplay();
       });
 
-      // Display summary
+      // Clean up data older than 2 months
+      function cleanOldData() {
+        const twoMonthsAgo = new Date();
+        twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+        
+        Object.keys(balances).forEach(date => {
+          if (new Date(date) < twoMonthsAgo) {
+            delete balances[date];
+          }
+        });
+        
+        localStorage.setItem('dailyBalances', JSON.stringify(balances));
+      }
+
+      // Display summary for the current display date
       function displaySummary() {
         summaryContent.innerHTML = "";
         
-        // Get the latest date
-        const dates = Object.keys(balances);
-        if (dates.length === 0) return;
+        // Get the current display date's balances
+        const currentBalances = balances[currentDisplayDate];
         
-        const latestDate = dates.sort().pop();
-        const latestBalances = balances[latestDate];
+        if (!currentBalances || Object.keys(currentBalances).length === 0) {
+          summaryContent.innerHTML = `<p>No balance data available for ${currentDisplayDate}</p>`;
+          return;
+        }
         
-        for (const [machine, data] of Object.entries(latestBalances)) {
+        // Get previous day's date
+        const prevDate = new Date(currentDisplayDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        const prevDateStr = prevDate.toISOString().split("T")[0];
+        const prevBalances = balances[prevDateStr];
+        
+        for (const [machine, data] of Object.entries(currentBalances)) {
           const div = document.createElement("div");
           div.classList.add("summary-machine");
           
-          // Calculate difference from initial balance
+          // Calculate difference from previous day
           let difference = 0;
           let differenceClass = "neutral";
+          let comparisonText = "No previous day data";
           
-          if (initialBalances[machine]) {
+          if (prevBalances && prevBalances[machine]) {
+            difference = data.total - prevBalances[machine].total;
+            differenceClass = difference > 0 ? "positive" : (difference < 0 ? "negative" : "neutral");
+            comparisonText = `Compared to ${prevDateStr}`;
+          } else if (initialBalances[machine]) {
+            // If no previous day data, compare with initial capital
             difference = data.total - initialBalances[machine].total;
             differenceClass = difference > 0 ? "positive" : (difference < 0 ? "negative" : "neutral");
+            comparisonText = "Compared to initial capital";
           }
           
           div.innerHTML = `
-            <h3>${machine} - ${latestDate}</h3>
+            <h3>${machine} - ${currentDisplayDate}</h3>
             <div class="summary-item"><span>Cash in Machine:</span><span>${data.cashMachine.toFixed(2)} TZS</span></div>
             <div class="summary-item"><span>Cash at Shop:</span><span>${data.cashShop.toFixed(2)} TZS</span></div>
             <div class="summary-item"><span>Cash at Home:</span><span>${data.cashHome.toFixed(2)} TZS</span></div>
             <div class="summary-item"><span>Total:</span><span>${data.total.toFixed(2)} TZS</span></div>
-            ${initialBalances[machine] ? `
-              <div class="summary-item"><span>Initial Total:</span><span>${initialBalances[machine].total.toFixed(2)} TZS</span></div>
-              <div class="difference ${differenceClass}">
-                Difference: ${difference > 0 ? '+' : ''}${difference.toFixed(2)} TZS
-              </div>
-            ` : ''}
+            <div class="summary-item"><span>${comparisonText}:</span><span>${difference > 0 ? '+' : ''}${difference.toFixed(2)} TZS</span></div>
+            <div class="difference ${differenceClass}">
+              Daily Change: ${difference > 0 ? '+' : ''}${difference.toFixed(2)} TZS
+            </div>
             <div class="action-buttons">
-              <button class="delete-btn" onclick="deleteBalance('${latestDate}', '${machine}')">🗑️ Delete</button>
-              <button class="update-btn" onclick="updateBalance('${latestDate}', '${machine}')">✏️ Update</button>
+              <button class="delete-btn" onclick="deleteBalance('${currentDisplayDate}', '${machine}')">🗑️ Delete</button>
+              <button class="update-btn" onclick="updateBalance('${currentDisplayDate}', '${machine}')">✏️ Update</button>
             </div>
           `;
           summaryContent.appendChild(div);
