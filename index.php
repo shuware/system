@@ -188,6 +188,52 @@
       color: #3498db;
     }
 
+    /* Daily Summary Section */
+    .daily-summary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin-bottom: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .daily-summary h3 {
+      color: white;
+      margin-bottom: 15px;
+      font-size: 18px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .daily-totals {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .total-item {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .total-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .total-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
     /* Setup Page Styles */
     .setup-container {
       max-width: 600px;
@@ -429,14 +475,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* Keyboard navigation helper */
-    .keyboard-hint {
-      font-size: 12px;
-      color: #7f8c8d;
-      margin-top: 5px;
-      text-align: center;
-    }
-
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -457,6 +495,9 @@
       .modal-content {
         width: 95%;
         max-height: 90vh;
+      }
+      .daily-totals {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -493,25 +534,21 @@
         <div class="form-group">
           <label>Cash in Machine (TZS):</label>
           <input type="text" id="cashInMachine" required placeholder="Enter amount in machine (e.g., 1,000,000)">
-          <div class="keyboard-hint">Press ↓ to move to next field</div>
         </div>
         
         <div class="form-group">
           <label>Cash at Shop (TZS):</label>
           <input type="text" id="cashAtShop" required placeholder="Enter amount at shop (e.g., 500,000)">
-          <div class="keyboard-hint">Press ↓ for next field, ↑ for previous</div>
         </div>
         
         <div class="form-group">
           <label>Cash at Home (TZS):</label>
           <input type="text" id="cashAtHome" required placeholder="Enter amount at home (e.g., 200,000)">
-          <div class="keyboard-hint">Press ↓ for date field, ↑ for previous</div>
         </div>
         
         <div class="form-group">
           <label>Date:</label>
           <input type="date" id="balanceDate" value="">
-          <div class="keyboard-hint">Press Enter to save</div>
         </div>
         
         <button type="submit">💾 Save Balance</button>
@@ -527,6 +564,33 @@
         <button id="prevDate" class="date-nav-btn">◀ Previous Day</button>
         <span id="currentDateDisplay" class="current-date">Today</span>
         <button id="nextDate" class="date-nav-btn">Next Day ▶</button>
+      </div>
+      
+      <!-- Daily Summary -->
+      <div id="dailySummary" class="daily-summary" style="display: none;">
+        <h3>Daily Summary - <span id="summaryDate"></span></h3>
+        <div class="daily-totals">
+          <div class="total-item">
+            <div class="total-label">Total Machines</div>
+            <div id="totalMachines" class="total-value">0</div>
+          </div>
+          <div class="total-item">
+            <div class="total-label">Total Cash</div>
+            <div id="totalCash" class="total-value">0 TZS</div>
+          </div>
+          <div class="total-item">
+            <div class="total-label">Total in Machines</div>
+            <div id="totalInMachines" class="total-value">0 TZS</div>
+          </div>
+          <div class="total-item">
+            <div class="total-label">Total at Shop</div>
+            <div id="totalAtShop" class="total-value">0 TZS</div>
+          </div>
+          <div class="total-item">
+            <div class="total-label">Total at Home</div>
+            <div id="totalAtHome" class="total-value">0 TZS</div>
+          </div>
+        </div>
       </div>
       
       <div id="summaryContent"></div>
@@ -590,6 +654,13 @@
       const prevDateBtn = document.getElementById("prevDate");
       const nextDateBtn = document.getElementById("nextDate");
       const currentDateDisplay = document.getElementById("currentDateDisplay");
+      const dailySummary = document.getElementById("dailySummary");
+      const summaryDate = document.getElementById("summaryDate");
+      const totalMachines = document.getElementById("totalMachines");
+      const totalCash = document.getElementById("totalCash");
+      const totalInMachines = document.getElementById("totalInMachines");
+      const totalAtShop = document.getElementById("totalAtShop");
+      const totalAtHome = document.getElementById("totalAtHome");
       
       const balanceForm = document.getElementById("balanceForm");
       const summaryContent = document.getElementById("summaryContent");
@@ -610,25 +681,84 @@
 
       // Format number with commas
       function formatNumber(num) {
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        if (isNaN(num)) return "0";
+        return Number(num).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
       }
 
       // Parse formatted number (remove commas)
       function parseFormattedNumber(str) {
-        return parseFloat(str.replace(/,/g, '')) || 0;
+        if (!str) return 0;
+        // Remove all non-digit characters except decimal point
+        const cleaned = str.replace(/[^\d.]/g, '');
+        return parseFloat(cleaned) || 0;
       }
 
       // Format input value as user types
       function formatInput(event) {
         const input = event.target;
-        // Remove non-digit characters except decimal point
+        const cursorPosition = input.selectionStart;
+        
+        // Get the current value and remove all non-digit characters except decimal point
         let value = input.value.replace(/[^\d.]/g, '');
+        
+        // Ensure only one decimal point
+        const decimalParts = value.split('.');
+        if (decimalParts.length > 2) {
+          value = decimalParts[0] + '.' + decimalParts.slice(1).join('');
+        }
         
         // Format with commas
         const parts = value.split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
-        input.value = parts.join('.');
+        const newValue = parts.join('.');
+        input.value = newValue;
+        
+        // Restore cursor position (approximate)
+        const newCursorPosition = cursorPosition + (newValue.length - input.value.length);
+        input.setSelectionRange(newCursorPosition, newCursorPosition);
+      }
+
+      // Calculate and display daily summary
+      function displayDailySummary(currentBalances) {
+        if (!currentBalances || Object.keys(currentBalances).length === 0) {
+          dailySummary.style.display = 'none';
+          return;
+        }
+
+        dailySummary.style.display = 'block';
+        
+        // Calculate totals
+        let totalCashSum = 0;
+        let totalInMachinesSum = 0;
+        let totalAtShopSum = 0;
+        let totalAtHomeSum = 0;
+        const machineCount = Object.keys(currentBalances).length;
+
+        for (const [machine, data] of Object.entries(currentBalances)) {
+          totalCashSum += data.total;
+          totalInMachinesSum += data.cashMachine;
+          totalAtShopSum += data.cashShop;
+          totalAtHomeSum += data.cashHome;
+        }
+
+        // Update summary elements
+        summaryDate.textContent = formatDisplayDate(currentDisplayDate);
+        totalMachines.textContent = machineCount;
+        totalCash.textContent = formatNumber(totalCashSum) + ' TZS';
+        totalInMachines.textContent = formatNumber(totalInMachinesSum) + ' TZS';
+        totalAtShop.textContent = formatNumber(totalAtShopSum) + ' TZS';
+        totalAtHome.textContent = formatNumber(totalAtHomeSum) + ' TZS';
+      }
+
+      // Format date for display
+      function formatDisplayDate(dateString) {
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
       }
 
       // Set up keyboard navigation for form inputs
@@ -890,10 +1020,10 @@
           div.classList.add("initial-machine");
           div.innerHTML = `
             <h3>${machine}</h3>
-            <div class="initial-item"><span>Cash in Machine:</span><span class="formatted-number">${formatNumber(data.cashMachine.toFixed(2))} TZS</span></div>
-            <div class="initial-item"><span>Cash at Shop:</span><span class="formatted-number">${formatNumber(data.cashShop.toFixed(2))} TZS</span></div>
-            <div class="initial-item"><span>Cash at Home:</span><span class="formatted-number">${formatNumber(data.cashHome.toFixed(2))} TZS</span></div>
-            <div class="initial-item"><span>Total:</span><span class="formatted-number">${formatNumber(data.total.toFixed(2))} TZS</span></div>
+            <div class="initial-item"><span>Cash in Machine:</span><span class="formatted-number">${formatNumber(data.cashMachine)} TZS</span></div>
+            <div class="initial-item"><span>Cash at Shop:</span><span class="formatted-number">${formatNumber(data.cashShop)} TZS</span></div>
+            <div class="initial-item"><span>Cash at Home:</span><span class="formatted-number">${formatNumber(data.cashHome)} TZS</span></div>
+            <div class="initial-item"><span>Total:</span><span class="formatted-number">${formatNumber(data.total)} TZS</span></div>
             <div class="initial-actions">
               <button class="edit-initial-btn" onclick="editInitialBalance('${machine}')">✏️ Edit</button>
               <button class="delete-initial-btn" onclick="deleteInitialBalance('${machine}')">🗑️ Delete</button>
@@ -908,7 +1038,7 @@
         totalDiv.classList.add("initial-machine");
         totalDiv.innerHTML = `
           <h3>Grand Total</h3>
-          <div class="initial-item"><span>Total Initial Capital:</span><span class="formatted-number">${formatNumber(grandTotal.toFixed(2))} TZS</span></div>
+          <div class="initial-item"><span>Total Initial Capital:</span><span class="formatted-number">${formatNumber(grandTotal)} TZS</span></div>
         `;
         initialCapitalContent.appendChild(totalDiv);
       }
@@ -1039,8 +1169,12 @@
         
         if (!currentBalances || Object.keys(currentBalances).length === 0) {
           summaryContent.innerHTML = `<p>No balance data available for ${currentDisplayDate}</p>`;
+          dailySummary.style.display = 'none';
           return;
         }
+        
+        // Display daily summary
+        displayDailySummary(currentBalances);
         
         // Get previous day's date
         const prevDate = new Date(currentDisplayDate);
@@ -1070,13 +1204,13 @@
           
           div.innerHTML = `
             <h3>${machine} - ${currentDisplayDate}</h3>
-            <div class="summary-item"><span>Cash in Machine:</span><span class="formatted-number">${formatNumber(data.cashMachine.toFixed(2))} TZS</span></div>
-            <div class="summary-item"><span>Cash at Shop:</span><span class="formatted-number">${formatNumber(data.cashShop.toFixed(2))} TZS</span></div>
-            <div class="summary-item"><span>Cash at Home:</span><span class="formatted-number">${formatNumber(data.cashHome.toFixed(2))} TZS</span></div>
-            <div class="summary-item"><span>Total:</span><span class="formatted-number">${formatNumber(data.total.toFixed(2))} TZS</span></div>
-            <div class="summary-item"><span>${comparisonText}:</span><span class="formatted-number">${difference > 0 ? '+' : ''}${formatNumber(difference.toFixed(2))} TZS</span></div>
+            <div class="summary-item"><span>Cash in Machine:</span><span class="formatted-number">${formatNumber(data.cashMachine)} TZS</span></div>
+            <div class="summary-item"><span>Cash at Shop:</span><span class="formatted-number">${formatNumber(data.cashShop)} TZS</span></div>
+            <div class="summary-item"><span>Cash at Home:</span><span class="formatted-number">${formatNumber(data.cashHome)} TZS</span></div>
+            <div class="summary-item"><span>Total:</span><span class="formatted-number">${formatNumber(data.total)} TZS</span></div>
+            <div class="summary-item"><span>${comparisonText}:</span><span class="formatted-number">${difference > 0 ? '+' : ''}${formatNumber(difference)} TZS</span></div>
             <div class="difference ${differenceClass}">
-              Daily Change: ${difference > 0 ? '+' : ''}${formatNumber(difference.toFixed(2))} TZS
+              Daily Change: ${difference > 0 ? '+' : ''}${formatNumber(difference)} TZS
             </div>
             <div class="action-buttons">
               <button class="delete-btn" onclick="deleteBalance('${currentDisplayDate}', '${machine}')">🗑️ Delete</button>
@@ -1117,6 +1251,14 @@
       
       // Make formatInput function available globally
       window.formatInput = formatInput;
+      
+      // Set up input formatting for cash fields
+      document.getElementById('cashInMachine').addEventListener('input', formatInput);
+      document.getElementById('cashAtShop').addEventListener('input', formatInput);
+      document.getElementById('cashAtHome').addEventListener('input', formatInput);
+      document.getElementById('newMachineCash').addEventListener('input', formatInput);
+      document.getElementById('newMachineShop').addEventListener('input', formatInput);
+      document.getElementById('newMachineHome').addEventListener('input', formatInput);
     });
   </script>
 </body>
