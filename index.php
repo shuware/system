@@ -364,6 +364,17 @@
       background-color: #8e44ad;
     }
 
+    /* Cash Balancing Button */
+    .balance-btn {
+      background-color: #e74c3c;
+      margin-bottom: 15px;
+      margin-right: 10px;
+    }
+
+    .balance-btn:hover {
+      background-color: #c0392b;
+    }
+
     /* Date Navigation */
     .date-navigation {
       display: flex;
@@ -545,6 +556,140 @@
       letter-spacing: 0.5px;
     }
 
+    /* Cash Balancing Styles */
+    .balance-section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-top: 20px;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .balance-section h2 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #3498db;
+      font-size: 18px;
+    }
+
+    .balance-instructions {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .balance-instructions h4 {
+      color: #856404;
+      margin-bottom: 8px;
+    }
+
+    .balance-instructions ul {
+      margin-left: 20px;
+      color: #856404;
+    }
+
+    .balance-instructions li {
+      margin-bottom: 5px;
+    }
+
+    .balance-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .balance-table th {
+      background-color: #3498db;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .balance-table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .balance-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    .balance-table tr:hover {
+      background-color: #e3f2fd;
+    }
+
+    .from-machine {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+    .to-machine {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+
+    .balance-amount {
+      font-weight: bold;
+      color: #3498db;
+    }
+
+    .balance-summary {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #3498db;
+    }
+
+    .balance-summary h4 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .balance-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .apply-balance-btn {
+      background-color: #2ecc71;
+    }
+
+    .apply-balance-btn:hover {
+      background-color: #27ae60;
+    }
+
+    .clear-balance-btn {
+      background-color: #95a5a6;
+    }
+
+    .clear-balance-btn:hover {
+      background-color: #7f8c8d;
+    }
+
+    .quick-transfer {
+      background-color: #d1ecf1;
+      border: 1px solid #bee5eb;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .quick-transfer h5 {
+      color: #0c5460;
+      margin-bottom: 5px;
+    }
+
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -568,6 +713,9 @@
       }
       .daily-totals {
         grid-template-columns: 1fr;
+      }
+      .balance-actions {
+        flex-direction: column;
       }
     }
   </style>
@@ -628,6 +776,7 @@
     <div class="summary-section">
       <h2>Balance Summary</h2>
       <div class="no-print">
+        <button id="balanceCashBtn" class="balance-btn">💰 Balance Cash</button>
         <button id="printSummaryBtn" class="print-btn">🖨️ Print Full Summary</button>
         <button id="viewInitialBtn" class="view-initial-btn">📊 View/Manage Initial Capital</button>
       </div>
@@ -667,6 +816,21 @@
       </div>
       
       <div id="summaryContent"></div>
+    </div>
+
+    <!-- Cash Balancing Section -->
+    <div id="balanceSection" class="balance-section" style="display: none;">
+      <h2>💰 Cash Balancing</h2>
+      <div class="balance-instructions">
+        <h4>📋 How to Balance Your Cash:</h4>
+        <ul>
+          <li><strong>Red Amounts:</strong> Machines that have EXTRA cash (need to GIVE cash)</li>
+          <li><strong>Green Amounts:</strong> Machines that NEED cash (need to RECEIVE cash)</li>
+          <li><strong>Simple Rule:</strong> Move cash from RED machines to GREEN machines</li>
+          <li><strong>Goal:</strong> Make all daily changes zero by transferring cash between machines</li>
+        </ul>
+      </div>
+      <div id="balanceContent"></div>
     </div>
   </div>
 
@@ -721,6 +885,7 @@
       const skipSetupBtn = document.getElementById("skipSetup");
       const saveSetupBtn = document.getElementById("saveSetup");
       const viewInitialBtn = document.getElementById("viewInitialBtn");
+      const balanceCashBtn = document.getElementById("balanceCashBtn");
       const printSummaryBtn = document.getElementById("printSummaryBtn");
       const initialCapitalModal = document.getElementById("initialCapitalModal");
       const initialCapitalContent = document.getElementById("initialCapitalContent");
@@ -739,6 +904,8 @@
       const totalAtShop = document.getElementById("totalAtShop");
       const totalAtHome = document.getElementById("totalAtHome");
       const printSummary = document.getElementById("printSummary");
+      const balanceSection = document.getElementById("balanceSection");
+      const balanceContent = document.getElementById("balanceContent");
       
       const balanceForm = document.getElementById("balanceForm");
       const summaryContent = document.getElementById("summaryContent");
@@ -769,7 +936,6 @@
       // Parse formatted number (remove commas)
       function parseFormattedNumber(str) {
         if (!str) return 0;
-        // Remove all non-digit characters except decimal point
         const cleaned = str.replace(/[^\d.]/g, '');
         return parseFloat(cleaned) || 0;
       }
@@ -779,28 +945,296 @@
         const input = event.target;
         const cursorPosition = input.selectionStart;
         
-        // Get the current value and remove all non-digit characters except decimal point
         let value = input.value.replace(/[^\d.]/g, '');
         
-        // Ensure only one decimal point
         const decimalParts = value.split('.');
         if (decimalParts.length > 2) {
           value = decimalParts[0] + '.' + decimalParts.slice(1).join('');
         }
         
-        // Format with commas
         const parts = value.split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
         const newValue = parts.join('.');
         input.value = newValue;
         
-        // Restore cursor position (approximate)
         const newCursorPosition = cursorPosition + (newValue.length - input.value.length);
         input.setSelectionRange(newCursorPosition, newCursorPosition);
       }
 
-      // Generate print summary with all machine details
+      // NEW FUNCTION: Calculate cash balancing between machines
+      function calculateCashBalancing(currentBalances, prevBalances, initialBalances) {
+        const machineChanges = [];
+        
+        // Calculate daily changes for each machine
+        for (const [machine, currentData] of Object.entries(currentBalances)) {
+          let dailyChange = 0;
+          
+          if (prevBalances && prevBalances[machine]) {
+            dailyChange = currentData.total - prevBalances[machine].total;
+          } else if (initialBalances[machine]) {
+            dailyChange = currentData.total - initialBalances[machine].total;
+          }
+          
+          machineChanges.push({
+            machine,
+            dailyChange,
+            currentTotal: currentData.total
+          });
+        }
+        
+        // Sort machines by daily change (most negative to most positive)
+        machineChanges.sort((a, b) => a.dailyChange - b.dailyChange);
+        
+        const transfers = [];
+        let i = 0;
+        let j = machineChanges.length - 1;
+        
+        // Match machines that need cash with machines that have extra cash
+        while (i < j) {
+          const needer = machineChanges[i];  // Machine that needs cash (negative change)
+          const giver = machineChanges[j];   // Machine that has extra cash (positive change)
+          
+          // If both are balanced, move on
+          if (needer.dailyChange >= 0 && giver.dailyChange <= 0) break;
+          
+          const needAmount = Math.abs(needer.dailyChange);
+          const giveAmount = Math.abs(giver.dailyChange);
+          const transferAmount = Math.min(needAmount, giveAmount);
+          
+          if (transferAmount > 0.01) { // Only create transfers for significant amounts
+            transfers.push({
+              fromMachine: giver.machine,
+              toMachine: needer.machine,
+              amount: transferAmount,
+              reason: `Balance daily changes: ${giver.machine} (+${formatNumber(giver.dailyChange)}) → ${needer.machine} (${formatNumber(needer.dailyChange)})`
+            });
+            
+            // Update the changes after transfer
+            needer.dailyChange += transferAmount;
+            giver.dailyChange -= transferAmount;
+            
+            // If needer is now balanced, move to next needer
+            if (Math.abs(needer.dailyChange) < 0.01) {
+              i++;
+            }
+            
+            // If giver is now balanced, move to next giver
+            if (Math.abs(giver.dailyChange) < 0.01) {
+              j--;
+            }
+          } else {
+            // If no significant transfer can be made, move pointers
+            if (needAmount <= giveAmount) {
+              i++;
+            } else {
+              j--;
+            }
+          }
+        }
+        
+        // Calculate summary
+        const totalNeeded = machineChanges
+          .filter(m => m.dailyChange < -0.01)
+          .reduce((sum, m) => sum + Math.abs(m.dailyChange), 0);
+          
+        const totalAvailable = machineChanges
+          .filter(m => m.dailyChange > 0.01)
+          .reduce((sum, m) => sum + m.dailyChange, 0);
+        
+        return {
+          transfers,
+          machineChanges,
+          totalNeeded,
+          totalAvailable,
+          netDifference: totalAvailable - totalNeeded,
+          canBalance: Math.abs(totalAvailable - totalNeeded) < 0.01
+        };
+      }
+
+      // NEW FUNCTION: Display cash balancing interface
+      function displayCashBalancing() {
+        const currentBalances = balances[currentDisplayDate];
+        if (!currentBalances || Object.keys(currentBalances).length === 0) {
+          balanceSection.style.display = 'none';
+          return;
+        }
+
+        // Get previous day's date
+        const prevDate = new Date(currentDisplayDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        const prevDateStr = prevDate.toISOString().split("T")[0];
+        const prevBalances = balances[prevDateStr];
+
+        // Calculate balancing
+        const balanceData = calculateCashBalancing(currentBalances, prevBalances, initialBalances);
+        
+        if (balanceData.transfers.length === 0 && Math.abs(balanceData.netDifference) < 0.01) {
+          balanceSection.style.display = 'none';
+          return;
+        }
+
+        balanceSection.style.display = 'block';
+        
+        let balanceHTML = '';
+        
+        // Show current daily changes
+        balanceHTML += `
+          <div class="balance-summary">
+            <h4>📊 Current Daily Changes</h4>
+        `;
+        
+        balanceData.machineChanges.forEach(machine => {
+          const changeClass = machine.dailyChange > 0 ? 'positive' : 
+                            (machine.dailyChange < 0 ? 'negative' : 'neutral');
+          const changeSign = machine.dailyChange > 0 ? '+' : '';
+          
+          balanceHTML += `
+            <div class="summary-item">
+              <span>${machine.machine}:</span>
+              <span class="${changeClass} formatted-number">${changeSign}${formatNumber(machine.dailyChange)} TZS</span>
+            </div>
+          `;
+        });
+        
+        balanceHTML += `</div>`;
+        
+        // Show transfers if any
+        if (balanceData.transfers.length > 0) {
+          balanceHTML += `
+            <h3 style="margin: 20px 0 10px 0; color: #2c3e50;">🔄 Required Cash Transfers</h3>
+            <table class="balance-table">
+              <thead>
+                <tr>
+                  <th>From Machine</th>
+                  <th>To Machine</th>
+                  <th>Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          
+          balanceData.transfers.forEach(transfer => {
+            balanceHTML += `
+              <tr>
+                <td class="from-machine">${transfer.fromMachine}</td>
+                <td class="to-machine">${transfer.toMachine}</td>
+                <td class="balance-amount formatted-number">${formatNumber(transfer.amount)} TZS</td>
+                <td>
+                  <div>Move cash from ${transfer.fromMachine} to ${transfer.toMachine}</div>
+                  <div class="quick-transfer">
+                    <h5>💡 Quick Action:</h5>
+                    Take ${formatNumber(transfer.amount)} TZS from <strong>${transfer.fromMachine}</strong> 
+                    and give it to <strong>${transfer.toMachine}</strong>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+          
+          balanceHTML += `
+              </tbody>
+            </table>
+          `;
+        }
+        
+        // Show summary
+        balanceHTML += `
+          <div class="balance-summary">
+            <h4>🎯 Balancing Summary</h4>
+            <div class="summary-item">
+              <span>Total Cash Needed:</span>
+              <span class="negative formatted-number">${formatNumber(balanceData.totalNeeded)} TZS</span>
+            </div>
+            <div class="summary-item">
+              <span>Total Cash Available:</span>
+              <span class="positive formatted-number">${formatNumber(balanceData.totalAvailable)} TZS</span>
+            </div>
+            <div class="summary-item">
+              <span>Net Difference:</span>
+              <span class="${balanceData.netDifference === 0 ? 'neutral' : (balanceData.netDifference > 0 ? 'positive' : 'negative')} formatted-number">
+                ${formatNumber(balanceData.netDifference)} TZS
+              </span>
+            </div>
+            <div class="summary-item">
+              <span>Status:</span>
+              <span><strong>${balanceData.canBalance ? '✅ Perfect Balance Possible' : '⚠️ Partial Balance Only'}</strong></span>
+            </div>
+          </div>
+        `;
+        
+        // Add action buttons
+        balanceHTML += `
+          <div class="balance-actions">
+            <button class="apply-balance-btn" onclick="applyAllTransfers()">✅ Apply All Transfers</button>
+            <button class="clear-balance-btn" onclick="clearBalanceDisplay()">❌ Clear Display</button>
+          </div>
+        `;
+        
+        // Add simple instructions for common scenarios
+        if (balanceData.transfers.length > 0) {
+          balanceHTML += `
+            <div class="balance-instructions" style="background-color: #d1ecf1; border-color: #bee5eb; margin-top: 15px;">
+              <h4>🚀 Quick Start Guide:</h4>
+              <ul>
+                <li><strong>Start with the largest transfer first</strong></li>
+                <li>Physically move cash between machines as shown above</li>
+                <li>After each transfer, the daily changes will get closer to zero</li>
+                <li>Use "Apply All Transfers" to automatically update balances</li>
+              </ul>
+            </div>
+          `;
+        }
+
+        balanceContent.innerHTML = balanceHTML;
+      }
+
+      // NEW FUNCTION: Apply all transfers automatically
+      window.applyAllTransfers = function() {
+        const currentBalances = balances[currentDisplayDate];
+        const prevDate = new Date(currentDisplayDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        const prevDateStr = prevDate.toISOString().split("T")[0];
+        const prevBalances = balances[prevDateStr];
+        
+        const balanceData = calculateCashBalancing(currentBalances, prevBalances, initialBalances);
+        
+        let updatedCount = 0;
+        
+        balanceData.transfers.forEach(transfer => {
+          const fromMachine = currentBalances[transfer.fromMachine];
+          const toMachine = currentBalances[transfer.toMachine];
+          
+          if (fromMachine && toMachine) {
+            // Move cash from one machine to another (adjust cash at shop)
+            fromMachine.cashShop -= transfer.amount;
+            fromMachine.total -= transfer.amount;
+            
+            toMachine.cashShop += transfer.amount;
+            toMachine.total += transfer.amount;
+            
+            updatedCount++;
+          }
+        });
+        
+        if (updatedCount > 0) {
+          // Save updated balances
+          localStorage.setItem('dailyBalances', JSON.stringify(balances));
+          displaySummary();
+          displayCashBalancing();
+          alert(`✅ Successfully applied ${updatedCount} cash transfers! Daily changes have been balanced.`);
+        } else {
+          alert('⚠️ No transfers were applied. Please check if you have any balancing recommendations.');
+        }
+      };
+
+      // NEW FUNCTION: Clear balance display
+      window.clearBalanceDisplay = function() {
+        balanceSection.style.display = 'none';
+      };
+
+      // Generate print summary
       function generatePrintSummary() {
         const currentBalances = balances[currentDisplayDate];
         if (!currentBalances || Object.keys(currentBalances).length === 0) {
@@ -882,50 +1316,7 @@
           `;
         }
 
-        // Add a comprehensive summary table
-        printHTML += `
-          </div>
-          <div style="margin-top: 30px; page-break-before: always;">
-            <h3>Comprehensive Machine Summary</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-              <thead>
-                <tr style="background-color: #f8f9fa;">
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Machine</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Cash in Machine</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Cash at Shop</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Cash at Home</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-        `;
-
-        // Add each machine's data to the table
-        for (const [machine, data] of Object.entries(currentBalances)) {
-          printHTML += `
-            <tr>
-              <td style="border: 1px solid #ddd; padding: 8px;">${machine}</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(data.cashMachine)} TZS</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(data.cashShop)} TZS</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(data.cashHome)} TZS</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">${formatNumber(data.total)} TZS</td>
-            </tr>
-          `;
-        }
-
-        // Add totals row
-        printHTML += `
-            <tr style="background-color: #f8f9fa; font-weight: bold;">
-              <td style="border: 1px solid #ddd; padding: 8px;">TOTAL</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(totalInMachinesSum)} TZS</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(totalAtShopSum)} TZS</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(totalAtHomeSum)} TZS</td>
-              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatNumber(totalCashSum)} TZS</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        `;
+        printHTML += `</div>`;
         
         // Set print content and trigger print
         printSummary.innerHTML = printHTML;
@@ -1128,6 +1519,11 @@
         setTimeout(() => {
           document.getElementById('newMachineName').focus();
         }, 100);
+      });
+
+      // Balance cash button
+      balanceCashBtn.addEventListener('click', function() {
+        displayCashBalancing();
       });
 
       // Print summary
@@ -1383,6 +1779,7 @@
         if (!currentBalances || Object.keys(currentBalances).length === 0) {
           summaryContent.innerHTML = `<p>No balance data available for ${currentDisplayDate}</p>`;
           dailySummary.style.display = 'none';
+          balanceSection.style.display = 'none';
           return;
         }
         
