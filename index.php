@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Balance Tracker</title>
+  <title>Daily Balance Tracker (Offline)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -72,6 +72,16 @@
       outline: none;
     }
 
+    /* Fix input field text alignment */
+    input[type="text"] {
+      text-align: left;
+      caret-color: #3498db;
+    }
+
+    input::placeholder {
+      text-align: left;
+    }
+
     button {
       background-color: #3498db;
       color: white;
@@ -97,8 +107,7 @@
     .update-btn {
       background-color: #2ecc71;
       padding: 6px 12px;
-      font-size: 13px;
-      border-radius: 4px;
+      font-size:-
     }
 
     .update-btn:hover {
@@ -117,7 +126,7 @@
       background-color: #c0392b;
     }
 
-    /* Blue Summary Box */
+    /* Blue Summary Box - Fixed sticky positioning */
     .summary-section {
       background-color: #2c3e50;
       color: white;
@@ -125,6 +134,7 @@
       overflow-y: auto;
       position: sticky;
       top: 10px;
+      z-index: 10;
     }
 
     .summary-section h2 {
@@ -232,6 +242,33 @@
       font-weight: bold;
       color: white;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* Offline indicator */
+    .offline-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #e74c3c;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1000;
+      display: none;
+    }
+
+    .online-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #2ecc71;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1000;
+      display: none;
     }
 
     /* Setup Page Styles */
@@ -827,6 +864,10 @@
   </style>
 </head>
 <body>
+  <!-- Offline/Online Indicators -->
+  <div id="offlineIndicator" class="offline-indicator">🔴 Offline Mode</div>
+  <div id="onlineIndicator" class="online-indicator">🟢 Online</div>
+
   <!-- Initial Setup Page -->
   <div id="setupPage" class="setup-container" style="display: none;">
     <h1>Welcome to Cash Flow Tracker</h1>
@@ -992,6 +1033,17 @@
   </div>
 
   <script>
+    // Register Service Worker for offline functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(registration) {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
       const setupPage = document.getElementById("setupPage");
       const mainApp = document.getElementById("mainApp");
@@ -1031,6 +1083,10 @@
       const balanceForm = document.getElementById("balanceForm");
       const summaryContent = document.getElementById("summaryContent");
       const balanceDate = document.getElementById("balanceDate");
+      
+      // Offline/Online indicators
+      const offlineIndicator = document.getElementById("offlineIndicator");
+      const onlineIndicator = document.getElementById("onlineIndicator");
 
       const today = new Date().toISOString().split("T")[0];
       balanceDate.value = today;
@@ -1044,6 +1100,24 @@
         "NMB", "CRDB", "NBC", "MKOMBOZI", "EQUITY", 
         "TCB", "UCHUMI", "M-PESA", "TIGO", "AIRTEL", "HALOTEL"
       ];
+
+      // Check online/offline status
+      function updateOnlineStatus() {
+        if (navigator.onLine) {
+          onlineIndicator.style.display = 'block';
+          offlineIndicator.style.display = 'none';
+          setTimeout(() => {
+            onlineIndicator.style.display = 'none';
+          }, 3000);
+        } else {
+          offlineIndicator.style.display = 'block';
+          onlineIndicator.style.display = 'none';
+        }
+      }
+
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus(); // Initial check
 
       // Format number with commas
       function formatNumber(num) {
