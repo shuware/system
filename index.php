@@ -117,17 +117,6 @@
       background-color: #c0392b;
     }
 
-    /* Print Button */
-    .print-btn {
-      background-color: #e67e22;
-      margin-bottom: 15px;
-      margin-right: 10px;
-    }
-
-    .print-btn:hover {
-      background-color: #d35400;
-    }
-
     /* Blue Summary Box */
     .summary-section {
       background-color: #2c3e50;
@@ -243,65 +232,6 @@
       font-weight: bold;
       color: white;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-
-    /* Print Styles */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #printSummary, #printSummary * {
-        visibility: visible;
-      }
-      #printSummary {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: white;
-        color: black;
-        padding: 20px;
-      }
-      .no-print {
-        display: none !important;
-      }
-      .print-break {
-        page-break-after: always;
-      }
-    }
-
-    .print-header {
-      text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #333;
-      padding-bottom: 10px;
-    }
-
-    .print-machine {
-      margin-bottom: 15px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    .print-machine h4 {
-      color: #2c3e50;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 5px;
-    }
-
-    .print-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 3px 0;
-    }
-
-    .print-totals {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 5px;
-      margin-top: 20px;
     }
 
     /* Setup Page Styles */
@@ -775,14 +705,13 @@
     
     <div class="summary-section">
       <h2>Balance Summary</h2>
-      <div class="no-print">
+      <div>
         <button id="balanceCashBtn" class="balance-btn">💰 Balance Cash</button>
-        <button id="printSummaryBtn" class="print-btn">🖨️ Print Full Summary</button>
         <button id="viewInitialBtn" class="view-initial-btn">📊 View/Manage Initial Capital</button>
       </div>
       
       <!-- Date Navigation -->
-      <div class="date-navigation no-print">
+      <div class="date-navigation">
         <button id="prevDate" class="date-nav-btn">◀ Previous Day</button>
         <span id="currentDateDisplay" class="current-date">Today</span>
         <button id="nextDate" class="date-nav-btn">Next Day ▶</button>
@@ -874,9 +803,6 @@
     </div>
   </div>
 
-  <!-- Print Summary (Hidden until print) -->
-  <div id="printSummary" style="display: none;"></div>
-
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const setupPage = document.getElementById("setupPage");
@@ -886,7 +812,6 @@
       const saveSetupBtn = document.getElementById("saveSetup");
       const viewInitialBtn = document.getElementById("viewInitialBtn");
       const balanceCashBtn = document.getElementById("balanceCashBtn");
-      const printSummaryBtn = document.getElementById("printSummaryBtn");
       const initialCapitalModal = document.getElementById("initialCapitalModal");
       const initialCapitalContent = document.getElementById("initialCapitalContent");
       const closeModalBtn = document.querySelector(".close-btn");
@@ -903,7 +828,6 @@
       const totalInMachines = document.getElementById("totalInMachines");
       const totalAtShop = document.getElementById("totalAtShop");
       const totalAtHome = document.getElementById("totalAtHome");
-      const printSummary = document.getElementById("printSummary");
       const balanceSection = document.getElementById("balanceSection");
       const balanceContent = document.getElementById("balanceContent");
       
@@ -1234,95 +1158,6 @@
         balanceSection.style.display = 'none';
       };
 
-      // Generate print summary
-      function generatePrintSummary() {
-        const currentBalances = balances[currentDisplayDate];
-        if (!currentBalances || Object.keys(currentBalances).length === 0) {
-          alert("No balance data available for the selected date.");
-          return;
-        }
-
-        // Calculate totals
-        let totalCashSum = 0;
-        let totalInMachinesSum = 0;
-        let totalAtShopSum = 0;
-        let totalAtHomeSum = 0;
-        const machineCount = Object.keys(currentBalances).length;
-
-        for (const [machine, data] of Object.entries(currentBalances)) {
-          totalCashSum += data.total;
-          totalInMachinesSum += data.cashMachine;
-          totalAtShopSum += data.cashShop;
-          totalAtHomeSum += data.cashHome;
-        }
-
-        // Get previous day's date and balances
-        const prevDate = new Date(currentDisplayDate);
-        prevDate.setDate(prevDate.getDate() - 1);
-        const prevDateStr = prevDate.toISOString().split("T")[0];
-        const prevBalances = balances[prevDateStr];
-
-        // Build print content
-        let printHTML = `
-          <div class="print-header">
-            <h1>Daily Balance Summary Report</h1>
-            <h2>${formatDisplayDate(currentDisplayDate)}</h2>
-            <p>Generated on ${new Date().toLocaleDateString()}</p>
-          </div>
-
-          <div class="print-totals">
-            <h3>Daily Totals</h3>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;">
-              <div><strong>Total Machines:</strong> ${machineCount}</div>
-              <div><strong>Total Cash:</strong> ${formatNumber(totalCashSum)} TZS</div>
-              <div><strong>Cash in Machines:</strong> ${formatNumber(totalInMachinesSum)} TZS</div>
-              <div><strong>Cash at Shop:</strong> ${formatNumber(totalAtShopSum)} TZS</div>
-              <div><strong>Cash at Home:</strong> ${formatNumber(totalAtHomeSum)} TZS</div>
-            </div>
-          </div>
-
-          <div style="margin-top: 30px;">
-            <h3>Machine Details</h3>
-        `;
-
-        // Add each machine's details
-        for (const [machine, data] of Object.entries(currentBalances)) {
-          // Calculate difference from previous day
-          let difference = 0;
-          let differenceClass = "neutral";
-          let comparisonText = "No previous day data";
-          
-          if (prevBalances && prevBalances[machine]) {
-            difference = data.total - prevBalances[machine].total;
-            differenceClass = difference > 0 ? "positive" : (difference < 0 ? "negative" : "neutral");
-            comparisonText = `Compared to ${prevDateStr}`;
-          } else if (initialBalances[machine]) {
-            difference = data.total - initialBalances[machine].total;
-            differenceClass = difference > 0 ? "positive" : (difference < 0 ? "negative" : "neutral");
-            comparisonText = "Compared to initial capital";
-          }
-
-          printHTML += `
-            <div class="print-machine">
-              <h4>${machine}</h4>
-              <div class="print-item"><span>Cash in Machine:</span><span>${formatNumber(data.cashMachine)} TZS</span></div>
-              <div class="print-item"><span>Cash at Shop:</span><span>${formatNumber(data.cashShop)} TZS</span></div>
-              <div class="print-item"><span>Cash at Home:</span><span>${formatNumber(data.cashHome)} TZS</span></div>
-              <div class="print-item" style="font-weight: bold; border-top: 1px solid #eee; margin-top: 5px; padding-top: 5px;">
-                <span>Total:</span><span>${formatNumber(data.total)} TZS</span>
-              </div>
-              <div class="print-item"><span>${comparisonText}:</span><span style="color: ${difference > 0 ? 'green' : difference < 0 ? 'red' : 'blue'}">${difference > 0 ? '+' : ''}${formatNumber(difference)} TZS</span></div>
-            </div>
-          `;
-        }
-
-        printHTML += `</div>`;
-        
-        // Set print content and trigger print
-        printSummary.innerHTML = printHTML;
-        window.print();
-      }
-
       // Calculate and display daily summary
       function displayDailySummary(currentBalances) {
         if (!currentBalances || Object.keys(currentBalances).length === 0) {
@@ -1525,9 +1360,6 @@
       balanceCashBtn.addEventListener('click', function() {
         displayCashBalancing();
       });
-
-      // Print summary
-      printSummaryBtn.addEventListener('click', generatePrintSummary);
 
       // Close modal
       closeModalBtn.addEventListener('click', function() {
