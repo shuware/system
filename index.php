@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Balance Tracker (Offline)</title>
+  <title>💰 Cash Flow Tracker (Offline)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -72,10 +72,11 @@
       outline: none;
     }
 
-    /* Fix input field text alignment */
+    /* Improved input field text alignment */
     input[type="text"] {
       text-align: left;
       caret-color: #3498db;
+      direction: ltr;
     }
 
     input::placeholder {
@@ -107,7 +108,7 @@
     .update-btn {
       background-color: #2ecc71;
       padding: 6px 12px;
-      font-size:-
+      font-size: 13px;
     }
 
     .update-btn:hover {
@@ -870,7 +871,7 @@
 
   <!-- Initial Setup Page -->
   <div id="setupPage" class="setup-container" style="display: none;">
-    <h1>Welcome to Cash Flow Tracker</h1>
+    <h1>💰 Welcome to Cash Flow Tracker</h1>
     <p>Let's set up your initial cash balances for each machine. This will help you track changes over time.</p>
     
     <div id="setupMachines">
@@ -886,10 +887,10 @@
   <!-- Main Application -->
   <div id="mainApp" class="container" style="display: none;">
     <div class="form-section">
-      <h2>Enter Daily Balances</h2>
+      <h2>💵 Enter Daily Balances</h2>
       <form id="balanceForm">
         <div class="form-group">
-          <label>Select Machine:</label>
+          <label>🏧 Select Machine:</label>
           <select id="machineSelect" required>
             <option value="">-- Choose Machine --</option>
             <!-- Options will be populated dynamically -->
@@ -897,22 +898,22 @@
         </div>
         
         <div class="form-group">
-          <label>Cash in Machine (TZS):</label>
+          <label>💵 Cash in Machine (TZS):</label>
           <input type="text" id="cashInMachine" required placeholder="Enter amount in machine (e.g., 1,000,000)">
         </div>
         
         <div class="form-group">
-          <label>Cash at Shop (TZS):</label>
+          <label>🏪 Cash at Shop (TZS):</label>
           <input type="text" id="cashAtShop" required placeholder="Enter amount at shop (e.g., 500,000)">
         </div>
         
         <div class="form-group">
-          <label>Cash at Home (TZS):</label>
+          <label>🏠 Cash at Home (TZS):</label>
           <input type="text" id="cashAtHome" required placeholder="Enter amount at home (e.g., 200,000)">
         </div>
         
         <div class="form-group">
-          <label>Date:</label>
+          <label>📅 Date:</label>
           <input type="date" id="balanceDate" value="">
         </div>
         
@@ -921,11 +922,11 @@
     </div>
     
     <div class="summary-section">
-      <h2>Balance Summary</h2>
+      <h2>📊 Balance Summary</h2>
       <div>
         <button id="shortReportBtn" class="short-report-btn">📋 Short Report</button>
         <button id="balanceCashBtn" class="balance-btn">💰 Balance Cash</button>
-        <button id="viewInitialBtn" class="view-initial-btn">📊 View/Manage Initial Capital</button>
+        <button id="viewInitialBtn" class="view-initial-btn">📈 View/Manage Initial Capital</button>
       </div>
       
       <!-- Date Navigation -->
@@ -937,7 +938,7 @@
       
       <!-- Daily Summary -->
       <div id="dailySummary" class="daily-summary" style="display: none;">
-        <h3>Daily Summary - <span id="summaryDate"></span></h3>
+        <h3>📈 Daily Summary - <span id="summaryDate"></span></h3>
         <div class="daily-totals">
           <div class="total-item">
             <div class="total-label">Total Machines</div>
@@ -996,7 +997,7 @@
   <div id="initialCapitalModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Initial Capital Management</h2>
+        <h2>💰 Initial Capital Management</h2>
         <button class="close-btn" title="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -1006,21 +1007,21 @@
         
         <!-- Add New Machine Form -->
         <div class="add-machine-form">
-          <h3>Add New Machine</h3>
+          <h3>➕ Add New Machine</h3>
           <div class="form-group">
-            <label>Machine Name:</label>
+            <label>🏧 Machine Name:</label>
             <input type="text" id="newMachineName" placeholder="Enter machine name">
           </div>
           <div class="form-group">
-            <label>Initial Cash in Machine (TZS):</label>
+            <label>💵 Initial Cash in Machine (TZS):</label>
             <input type="text" id="newMachineCash" placeholder="Enter initial amount in machine (e.g., 1,000,000)">
           </div>
           <div class="form-group">
-            <label>Initial Cash at Shop (TZS):</label>
+            <label>🏪 Initial Cash at Shop (TZS):</label>
             <input type="text" id="newMachineShop" placeholder="Enter initial amount at shop (e.g., 500,000)">
           </div>
           <div class="form-group">
-            <label>Initial Cash at Home (TZS):</label>
+            <label>🏠 Initial Cash at Home (TZS):</label>
             <input type="text" id="newMachineHome" placeholder="Enter initial amount at home (e.g., 200,000)">
           </div>
           <div class="add-machine-buttons">
@@ -1135,25 +1136,51 @@
         return parseFloat(cleaned) || 0;
       }
 
-      // Format input value as user types
+      // IMPROVED: Format input value as user types with better cursor handling
       function formatInput(event) {
         const input = event.target;
         const cursorPosition = input.selectionStart;
+        const originalValue = input.value;
         
-        let value = input.value.replace(/[^\d.]/g, '');
+        // Store the decimal part if exists
+        const decimalIndex = originalValue.indexOf('.');
+        let decimalPart = '';
+        if (decimalIndex !== -1) {
+          decimalPart = originalValue.substring(decimalIndex);
+        }
         
+        // Remove all non-digit characters except decimal point
+        let value = originalValue.replace(/[^\d.]/g, '');
+        
+        // Ensure only one decimal point
         const decimalParts = value.split('.');
         if (decimalParts.length > 2) {
           value = decimalParts[0] + '.' + decimalParts.slice(1).join('');
         }
         
+        // Format the integer part with commas
         const parts = value.split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
+        // Reconstruct the value
         const newValue = parts.join('.');
         input.value = newValue;
         
-        const newCursorPosition = cursorPosition + (newValue.length - input.value.length);
+        // Calculate new cursor position
+        let newCursorPosition = cursorPosition;
+        
+        // If we added commas, adjust cursor position
+        const commaCountOriginal = (originalValue.substring(0, cursorPosition).match(/,/g) || []).length;
+        const commaCountNew = (newValue.substring(0, cursorPosition).match(/,/g) || []).length;
+        
+        if (commaCountNew !== commaCountOriginal) {
+          newCursorPosition += commaCountNew - commaCountOriginal;
+        }
+        
+        // Ensure cursor stays within bounds
+        newCursorPosition = Math.max(0, Math.min(newValue.length, newCursorPosition));
+        
+        // Set cursor position
         input.setSelectionRange(newCursorPosition, newCursorPosition);
       }
 
