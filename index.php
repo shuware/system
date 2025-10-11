@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💰 Cash Flow Tracker (Offline)</title>
+  <title>cash-balance</title>
+  <link rel="icon" type="image/png" href="image/title_image.png">
   <style>
     * {
       box-sizing: border-box;
@@ -866,12 +867,12 @@
 </head>
 <body>
   <!-- Offline/Online Indicators -->
-  <div id="offlineIndicator" class="offline-indicator">🔴 Offline Mode</div>
-  <div id="onlineIndicator" class="online-indicator">🟢 Online</div>
+  <div id="offlineIndicator" class="offline-indicator">Offline</div>
+  <div id="onlineIndicator" class="online-indicator">Online</div>
 
   <!-- Initial Setup Page -->
   <div id="setupPage" class="setup-container" style="display: none;">
-    <h1>💰 Welcome to Cash Flow Tracker</h1>
+    <h1> Welcome to Cash Flow Tracker</h1>
     <p>Let's set up your initial cash balances for each machine. This will help you track changes over time.</p>
     
     <div id="setupMachines">
@@ -887,10 +888,10 @@
   <!-- Main Application -->
   <div id="mainApp" class="container" style="display: none;">
     <div class="form-section">
-      <h2>💵 Enter Daily Balances</h2>
+      <h2>Enter Daily Cash Balances</h2>
       <form id="balanceForm">
         <div class="form-group">
-          <label>🏧 Select Machine:</label>
+          <label> Select Machine:</label>
           <select id="machineSelect" required>
             <option value="">-- Choose Machine --</option>
             <!-- Options will be populated dynamically -->
@@ -898,35 +899,35 @@
         </div>
         
         <div class="form-group">
-          <label>💵 Cash in Machine (TZS):</label>
-          <input type="text" id="cashInMachine" required placeholder="Enter amount in machine (e.g., 1,000,000)">
+          <label>Float(TZS):</label>
+          <input type="text" id="cashInMachine" required placeholder="enter float">
         </div>
         
         <div class="form-group">
-          <label>🏪 Cash at Shop (TZS):</label>
-          <input type="text" id="cashAtShop" required placeholder="Enter amount at shop (e.g., 500,000)">
+          <label>Cash at Shop (TZS):</label>
+          <input type="text" id="cashAtShop" required placeholder="Enter amount at shop">
         </div>
         
         <div class="form-group">
-          <label>🏠 Cash at Home (TZS):</label>
-          <input type="text" id="cashAtHome" required placeholder="Enter amount at home (e.g., 200,000)">
+          <label>Cash at Home (TZS):</label>
+          <input type="text" id="cashAtHome" required placeholder="Enter amount at home">
         </div>
         
         <div class="form-group">
-          <label>📅 Date:</label>
+          <label>Date:</label>
           <input type="date" id="balanceDate" value="">
         </div>
         
-        <button type="submit">💾 Save Balance</button>
+        <button type="submit">Save Balance</button>
       </form>
     </div>
     
     <div class="summary-section">
-      <h2>📊 Balance Summary</h2>
+      <h2> Balance Summary</h2>
       <div>
-        <button id="shortReportBtn" class="short-report-btn">📋 Short Report</button>
-        <button id="balanceCashBtn" class="balance-btn">💰 Balance Cash</button>
-        <button id="viewInitialBtn" class="view-initial-btn">📈 View/Manage Initial Capital</button>
+        <button id="shortReportBtn" class="short-report-btn">Short Report</button>
+        <button id="balanceCashBtn" class="balance-btn">Balance Cash</button>
+        <button id="viewInitialBtn" class="view-initial-btn">View/Manage Initial Capital</button>
       </div>
       
       <!-- Date Navigation -->
@@ -938,7 +939,7 @@
       
       <!-- Daily Summary -->
       <div id="dailySummary" class="daily-summary" style="display: none;">
-        <h3>📈 Daily Summary - <span id="summaryDate"></span></h3>
+        <h3> Daily Summary - <span id="summaryDate"></span></h3>
         <div class="daily-totals">
           <div class="total-item">
             <div class="total-label">Total Machines</div>
@@ -970,7 +971,7 @@
   <!-- Short Report Page -->
   <div id="shortReportPage" class="full-page short-report-page">
     <div class="page-header">
-      <h1>📋 Short Report - <span id="reportDate"></span></h1>
+      <h1>Short Report - <span id="reportDate"></span></h1>
       <div class="page-actions">
         <button id="printReportBtn" class="print-btn">🖨️ Print Report</button>
         <button id="backToMainFromReportBtn" class="back-btn">⬅ Back to Main</button>
@@ -983,7 +984,7 @@
   <!-- Cash Balancing Page -->
   <div id="balancePage" class="full-page balance-page">
     <div class="page-header">
-      <h1>💰 Cash Balancing - <span id="balancePageDate"></span></h1>
+      <h1> Cash Balancing - <span id="balancePageDate"></span></h1>
       <div class="page-actions">
         <button id="printBalanceBtn" class="print-btn">🖨️ Print Balance</button>
         <button id="backToMainFromBalanceBtn" class="back-btn">⬅ Back to Main</button>
@@ -997,7 +998,7 @@
   <div id="initialCapitalModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>💰 Initial Capital Management</h2>
+        <h2>Initial Capital Management</h2>
         <button class="close-btn" title="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -1007,22 +1008,22 @@
         
         <!-- Add New Machine Form -->
         <div class="add-machine-form">
-          <h3>➕ Add New Machine</h3>
+          <h3>Add New Machine</h3>
           <div class="form-group">
-            <label>🏧 Machine Name:</label>
+            <label> Machine Name:</label>
             <input type="text" id="newMachineName" placeholder="Enter machine name">
           </div>
           <div class="form-group">
-            <label>💵 Initial Cash in Machine (TZS):</label>
-            <input type="text" id="newMachineCash" placeholder="Enter initial amount in machine (e.g., 1,000,000)">
+            <label>Initial float(TZS):</label>
+            <input type="text" id="newMachineCash" placeholder="Enter initial float">
           </div>
           <div class="form-group">
-            <label>🏪 Initial Cash at Shop (TZS):</label>
-            <input type="text" id="newMachineShop" placeholder="Enter initial amount at shop (e.g., 500,000)">
+            <label>Initial Cash at Shop (TZS):</label>
+            <input type="text" id="newMachineShop" placeholder="Enter initial amount at shop">
           </div>
           <div class="form-group">
-            <label>🏠 Initial Cash at Home (TZS):</label>
-            <input type="text" id="newMachineHome" placeholder="Enter initial amount at home (e.g., 200,000)">
+            <label>Initial Cash at Home (TZS):</label>
+            <input type="text" id="newMachineHome" placeholder="Enter initial amount at home">
           </div>
           <div class="add-machine-buttons">
             <button id="cancelAddMachine" class="cancel-btn">Cancel</button>
@@ -1279,7 +1280,7 @@
         
         reportHTML += `
           <div class="short-report-totals">
-            <h3>📊 Summary Overview</h3>
+            <h3>Summary Overview</h3>
             <div class="summary-grid">
               <div class="summary-card">
                 <h4>Total Machines</h4>
@@ -1330,7 +1331,7 @@
         // Show instructions
         balanceHTML += `
           <div class="balance-instructions">
-            <h4>📋 How to Balance Your Cash:</h4>
+            <h4> How to Balance Your Cash:</h4>
             <ul>
               <li><strong>Red Amounts:</strong> Machines that have EXTRA cash (need to GIVE cash)</li>
               <li><strong>Green Amounts:</strong> Machines that NEED cash (need to RECEIVE cash)</li>
@@ -1343,7 +1344,7 @@
         // Show current daily changes
         balanceHTML += `
           <div class="balance-summary">
-            <h4>📊 Current Daily Changes</h4>
+            <h4> Current Daily Changes</h4>
         `;
         
         balanceData.machineChanges.forEach(machine => {
@@ -1364,7 +1365,7 @@
         // Show transfers if any
         if (balanceData.transfers.length > 0) {
           balanceHTML += `
-            <h3 style="margin: 20px 0 10px 0; color: #2c3e50;">🔄 Required Cash Transfers</h3>
+            <h3 style="margin: 20px 0 10px 0; color: #2c3e50;"> Required Cash Transfers</h3>
             <table class="balance-table">
               <thead>
                 <tr>
@@ -1386,7 +1387,7 @@
                 <td>
                   <div>Move cash from ${transfer.fromMachine} to ${transfer.toMachine}</div>
                   <div class="quick-transfer">
-                    <h5>💡 Quick Action:</h5>
+                    <h5>Quick Action:</h5>
                     Take ${formatNumber(transfer.amount)} TZS from <strong>${transfer.fromMachine}</strong> 
                     and give it to <strong>${transfer.toMachine}</strong>
                   </div>
@@ -1404,7 +1405,7 @@
         // Show summary
         balanceHTML += `
           <div class="balance-summary">
-            <h4>🎯 Balancing Summary</h4>
+            <h4>Balancing Summary</h4>
             <div class="summary-item">
               <span>Total Cash Needed:</span>
               <span class="negative formatted-number">${formatNumber(balanceData.totalNeeded)} TZS</span>
@@ -1437,7 +1438,7 @@
         if (balanceData.transfers.length > 0) {
           balanceHTML += `
             <div class="balance-instructions" style="background-color: #d1ecf1; border-color: #bee5eb; margin-top: 15px;">
-              <h4>🚀 Quick Start Guide:</h4>
+              <h4>Quick Start Guide:</h4>
               <ul>
                 <li><strong>Start with the largest transfer first</strong></li>
                 <li>Physically move cash between machines as shown above</li>
